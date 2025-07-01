@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>飛鼠電商自動化監控儀表板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft JhengHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            color: #2c5aa0;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            text-align: center;
+            color: #666;
+        }
+
+        .security-warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 5px solid #f39c12;
+        }
+
+        .security-warning h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .security-warning p {
+            color: #856404;
+            font-size: 14px;
+        }
+
+        .config-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .config-section h2 {
+            color: #2c5aa0;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e3f2fd;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #2c5aa0;
+        }
+
+        .form-group input[type="password"] {
+            font-family: monospace;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #2c5aa0 0%, #1e3d72 100%);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(44, 90, 160, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .status-card h3 {
+            color: #2c5aa0;
+            margin-bottom: 10px;
+        }
+
+        .status-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        .status-online {
+            background: #27ae60;
+            box-shadow: 0 0 10px rgba(39, 174, 96, 0.5);
+        }
+
+        .status-offline {
+            background: #e74c3c;
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+        }
+
+        .status-warning {
+            background: #f39c12;
+            box-shadow: 0 0 10px rgba(243, 156, 18, 0.5);
+        }
+
+        .log-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .log-container {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+
+        .log-error { color: #ff6b6b; }
+        .log-warning { color: #ffd93d; }
+        .log-success { color: #6bcf7f; }
+        .log-info { color: #74c0fc; }
+
+        .hidden {
+            display: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .processing {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏪 飛鼠電商自動化監控系統</h1>
+            <p>基於 n8n、Browserless.io 和 Google Sheets 的完整自動化解決方案</p>
+        </div>
+
+        <div class="security-warning">
+            <h3>🔒 安全提醒</h3>
+            <p>請確保您已更改所有在此處使用的密碼和 API 金鑰。本系統將憑證存儲在瀏覽器本地，不會上傳到任何服務器。</p>
+        </div>
+
+        <div class="security-warning" style="background: #e3f2fd; border-color: #2196f3; border-left-color: #1976d2;">
+            <h3>⚠️ GitHub Pages 限制說明</h3>
+            <p><strong>目前限制：</strong> GitHub Pages 是靜態托管，無法直接調用第三方 API（CORS 限制）</p>
+            <p><strong>解決方案：</strong></p>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>🚀 <strong>推薦：</strong>部署到 <a href="#vercel-deploy" style="color: #1976d2;">Vercel</a> 或 Netlify（支援 serverless 函數）</li>
+                <li>🔧 使用 CORS 代理服務（功能有限）</li>
+                <li>💻 本地運行（完整功能）</li>
+            </ul>
+        </div>
+
+        <div class="config-section">
+            <h2>⚙️ 系統配置</h2>
+            <div class="form-group">
+                <label for="feishu-email">飛鼠電商帳號 (Email)</label>
+                <input type="email" id="feishu-email" placeholder="請輸入飛鼠電商登入 Email">
+            </div>
+            <div class="form-group">
+                <label for="feishu-password">飛鼠電商密碼</label>
+                <input type="password" id="feishu-password" placeholder="請輸入密碼">
+            </div>
+            <div class="form-group">
+                <label for="browserless-api">Browserless.io API Key</label>
+                <input type="password" id="browserless-api" placeholder="請輸入 Browserless.io API Key">
+            </div>
+            <div class="form-group">
+                <label for="sheets-api">Google Sheets API Key</label>
+                <input type="password" id="sheets-api" placeholder="請輸入 Google Sheets API Key">
+            </div>
+            <div class="form-group">
+                <label for="sheets-id">Google Sheets ID</label>
+                <input type="text" id="sheets-id" placeholder="請輸入 Google Sheets 檔案 ID">
+            </div>
+            <button class="btn" onclick="saveConfig()">💾 儲存配置</button>
+            <button class="btn btn-success" onclick="testConnection()">🔍 測試連接</button>
+        </div>
+
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>飛鼠電商連接</h3>
+                <div id="feishu-status">
+                    <span class="status-indicator status-offline"></span>
+                    <span>未連接</span>
+                </div>
+                <p id="feishu-last-check">最後檢查: 從未</p>
+            </div>
+            <div class="status-card">
+                <h3>Browserless 服務</h3>
+                <div id="browserless-status">
+                    <span class="status-indicator status-offline"></span>
+                    <span>未連接</span>
+                </div>
+                <p id="browserless-last-check">最後檢查: 從未</p>
+            </div>
+            <div class="status-card">
+                <h3>Google Sheets</h3>
+                <div id="sheets-status">
+                    <span class="status-indicator status-offline"></span>
+                    <span>未連接</span>
+                </div>
+                <p id="sheets-last-check">最後檢查: 從未</p>
+            </div>
+            <div class="status-card">
+                <h3>自動化狀態</h3>
+                <div id="automation-status">
+                    <span class="status-indicator status-offline"></span>
+                    <span>停止</span>
+                </div>
+                <p id="automation-last-run">最後執行: 從未</p>
+            </div>
+        </div>
+
+        <div class="config-section">
+            <h2>🚀 控制面板</h2>
+            <button class="btn btn-success" onclick="startAutomation()">▶️ 開始自動化</button>
+            <button class="btn btn-danger" onclick="stopAutomation()">⏹️ 停止自動化</button>
+            <button class="btn" onclick="runProductScraping()">📦 手動抓取商品</button>
+            <button class="btn" onclick="runInventoryCheck()">📊 檢查庫存</button>
+            <button class="btn" onclick="generateReport()">📋 生成報表</button>
+            <button class="btn" onclick="clearLogs()">🗑️ 清除日誌</button>
+        </div>
+
+        <div class="log-section">
+            <h2>📝 系統日誌</h2>
+            <div class="log-container" id="log-container">
+                <div class="log-entry log-info">[系統] 飛鼠電商自動化系統已啟動</div>
+                <div class="log-entry log-warning">[警告] 請先配置系統設定</div>
+            </div>
+        </div>
+
+        <div class="config-section" id="vercel-deploy">
+            <h2>🚀 完整功能部署指南</h2>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3>為什麼需要 Vercel 部署？</h3>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>✅ 支援 serverless 函數，可以處理 API 調用</li>
+                    <li>✅ 內建 CORS 處理</li>
+                    <li>✅ 免費額度充足</li>
+                    <li>✅ 與 GitHub 無縫整合</li>
+                </ul>
+            </div>
+            
+            <div style="background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; font-family: monospace; margin-bottom: 20px;">
+                <div style="color: #74c0fc; margin-bottom: 10px;">快速部署步驟：</div>
+                <div>1. 前往 <span style="color: #ffd93d;">https://vercel.com</span></div>
+                <div>2. 使用 GitHub 帳號登入</div>
+                <div>3. 選擇您的 repository</div>
+                <div>4. 點擊 "Deploy"</div>
+                <div>5. 等待部署完成</div>
+            </div>
+
+            <button class="btn" onclick="window.open('https://vercel.com/new', '_blank')">🚀 立即部署到 Vercel</button>
+            <button class="btn" onclick="showLocalRunGuide()">💻 查看本地運行指南</button>
+        </div>
+    </div>
+
+    <div id="local-guide" class="hidden" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+            <h3>💻 本地運行指南</h3>
+            <div style="background: #1e1e1e; color: #00ff00; padding: 15px; border-radius: 8px; font-family: monospace; margin: 15px 0;">
+                <div style="color: #74c0fc;">1. 下載項目：</div>
+                <div>git clone https://github.com/stevenchen760815/n8n-github-issues-automation.git</div>
+                <br>
+                <div style="color: #74c0fc;">2. 安裝 HTTP 服務器：</div>
+                <div>npm install -g http-server</div>
+                <br>
+                <div style="color: #74c0fc;">3. 啟動服務器：</div>
+                <div>cd n8n-github-issues-automation</div>
+                <div>http-server -p 8080 --cors</div>
+                <br>
+                <div style="color: #74c0fc;">4. 訪問：</div>
+                <div>http://localhost:8080</div>
+            </div>
+            <button class="btn" onclick="hideLocalRunGuide()">關閉</button>
+        </div>
+    </div>
+
+    <script>
+        // 全局變數
+        let automationRunning = false;
+        let config = {};
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadConfig();
+            addLog('info', '系統初始化完成');
+        });
+
+        // 配置管理
+        function saveConfig() {
+            config = {
+                feishuEmail: document.getElementById('feishu-email').value,
+                feishuPassword: document.getElementById('feishu-password').value,
+                browserlessApi: document.getElementById('browserless-api').value,
+                sheetsApi: document.getElementById('sheets-api').value,
+                sheetsId: document.getElementById('sheets-id').value
+            };
+
+            // 儲存到本地存儲（僅限演示用途）
+            localStorage.setItem('feishu_automation_config', JSON.stringify(config));
+            addLog('success', '配置已儲存到本地');
+        }
+
+        function loadConfig() {
+            const saved = localStorage.getItem('feishu_automation_config');
+            if (saved) {
+                config = JSON.parse(saved);
+                document.getElementById('feishu-email').value = config.feishuEmail || '';
+                document.getElementById('feishu-password').value = config.feishuPassword || '';
+                document.getElementById('browserless-api').value = config.browserlessApi || '';
+                document.getElementById('sheets-api').value = config.sheetsApi || '';
+                document.getElementById('sheets-id').value = config.sheetsId || '';
+                addLog('info', '已載入儲存的配置');
+            }
+        }
+
+        // 連接測試
+        async function testConnection() {
+            addLog('info', '開始測試各項服務連接...');
+            
+            await testBrowserlessConnection();
+            await testSheetsConnection();
+            await testFeishuConnection();
+        }
+
+        async function testBrowserlessConnection() {
+            try {
+                if (!config.browserlessApi) {
+                    throw new Error('未設定 Browserless API Key');
+                }
+
+                addLog('info', '測試 Browserless.io 連接...');
+                
+                // 使用 CORS 代理進行測試
+                const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent('https://chrome.browserless.io/json/version')}`;
+                
+                const response = await fetch(proxyUrl);
+                const data = await response.json();
+
+                if (response.ok && data.status.http_code === 200) {
+                    updateStatus('browserless', 'online', '連接正常');
+                    addLog('success', 'Browserless.io 連接成功 (通過代理)');
+                } else {
+                    throw new Error(`HTTP ${data.status.http_code || response.status}`);
+                }
+            } catch (error) {
+                updateStatus('browserless', 'offline', '連接失敗');
+                addLog('error', `Browserless.io 連接失敗: ${error.message}`);
+                addLog('warning', '注意：GitHub Pages 有 CORS 限制，建議使用 Vercel 部署');
+            }
+        }
+
+        async function testSheetsConnection() {
+            try {
+                if (!config.sheetsApi || !config.sheetsId) {
+                    throw new Error('未設定 Google Sheets API Key 或 Sheets ID');
+                }
+
+                addLog('info', '測試 Google Sheets 連接...');
+                
+                // Google Sheets API 支援 CORS，但需要正確設定
+                const sheetsUrl = `https://sheets.googleapis.com/v4/spreadsheets/${config.sheetsId}?key=${config.sheetsApi}&fields=properties.title`;
+                
+                const response = await fetch(sheetsUrl);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('sheets', 'online', '連接正常');
+                    addLog('success', `Google Sheets 連接成功 - ${data.properties?.title || '未知工作表'}`);
+                } else {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(`HTTP ${response.status}: ${errorData.error?.message || '未知錯誤'}`);
+                }
+            } catch (error) {
+                updateStatus('sheets', 'offline', '連接失敗');
+                addLog('error', `Google Sheets 連接失敗: ${error.message}`);
+                if (error.message.includes('API key not valid')) {
+                    addLog('warning', '請檢查 Google Sheets API Key 是否正確並已啟用 Sheets API');
+                }
+            }
+        }
+
+        async function testFeishuConnection() {
+            try {
+                if (!config.feishuEmail || !config.feishuPassword) {
+                    throw new Error('未設定飛鼠電商登入資訊');
+                }
+
+                addLog('info', '測試飛鼠電商連接...');
+                addLog('warning', 'GitHub Pages 無法直接測試飛鼠電商登入（需要 CORS 代理）');
+                
+                // 模擬測試（實際部署時需要後端支援）
+                updateStatus('feishu', 'warning', '需要後端支援');
+                addLog('info', '飛鼠電商測試需要部署到支援 serverless 的平台');
+                addLog('info', '建議使用 Vercel 或 Netlify 進行部署以獲得完整功能');
+
+            } catch (error) {
+                updateStatus('feishu', 'offline', '連接失敗');
+                addLog('error', `飛鼠電商連接失敗: ${error.message}`);
+            }
+        }
+
+        // 自動化控制
+        function startAutomation() {
+            if (!validateConfig()) {
+                addLog('error', '請先完成系統配置');
+                return;
+            }
+
+            automationRunning = true;
+            updateStatus('automation', 'online', '運行中');
+            addLog('success', '自動化系統已啟動');
+
+            // 模擬定期執行
+            startPeriodicTasks();
+        }
+
+        function stopAutomation() {
+            automationRunning = false;
+            updateStatus('automation', 'offline', '已停止');
+            addLog('warning', '自動化系統已停止');
+        }
+
+        function startPeriodicTasks() {
+            if (!automationRunning) return;
+
+            // 每 2 小時檢查一次庫存
+            setTimeout(() => {
+                if (automationRunning) {
+                    runInventoryCheck();
+                    startPeriodicTasks();
+                }
+            }, 2 * 60 * 60 * 1000);
+
+            // 每 4 小時抓取一次商品
+            setTimeout(() => {
+                if (automationRunning) {
+                    runProductScraping();
+                }
+            }, 4 * 60 * 60 * 1000);
+        }
+
+        // 具體功能實現
+        async function runProductScraping() {
+            addLog('info', '開始抓取商品資料...');
+            
+            try {
+                const browserlessRequest = {
+                    url: 'https://www.feishu.com.tw/admin/products',
+                    authenticate: {
+                        username: config.feishuEmail,
+                        password: config.feishuPassword
+                    },
+                    waitFor: 30000,
+                    elements: [{
+                        selector: '.product-item',
+                        type: 'html'
+                    }]
+                };
+
+                const response = await fetch('https://chrome.browserless.io/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.browserlessApi}`
+                    },
+                    body: JSON.stringify(browserlessRequest)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    addLog('success', `成功抓取 ${result.data?.length || 0} 筆商品資料`);
+                    
+                    // 儲存到 Google Sheets
+                    if (result.data && result.data.length > 0) {
+                        await saveToGoogleSheets('products', result.data);
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                addLog('error', `商品抓取失敗: ${error.message}`);
+            }
+        }
+
+        async function runInventoryCheck() {
+            addLog('info', '開始檢查庫存狀態...');
+            
+            try {
+                // 從 Google Sheets 讀取最新商品資料
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${config.sheetsId}/values/products!A:Z?key=${config.sheetsApi}`);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const products = result.values || [];
+                    
+                    // 分析庫存狀況
+                    const analysis = analyzeInventory(products);
+                    
+                    addLog('info', `庫存分析完成: 總計 ${analysis.total} 件商品`);
+                    
+                    if (analysis.lowStock.length > 0) {
+                        addLog('warning', `發現 ${analysis.lowStock.length} 件低庫存商品`);
+                    }
+                    
+                    if (analysis.outOfStock.length > 0) {
+                        addLog('error', `發現 ${analysis.outOfStock.length} 件缺貨商品`);
+                    }
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                addLog('error', `庫存檢查失敗: ${error.message}`);
+            }
+        }
+
+        async function generateReport() {
+            addLog('info', '開始生成系統報表...');
+            
+            try {
+                const reportData = {
+                    timestamp: new Date().toISOString(),
+                    feishuStatus: document.getElementById('feishu-status').textContent,
+                    browserlessStatus: document.getElementById('browserless-status').textContent,
+                    sheetsStatus: document.getElementById('sheets-status').textContent,
+                    automationStatus: document.getElementById('automation-status').textContent
+                };
+
+                // 儲存報表到 Google Sheets
+                await saveToGoogleSheets('reports', [reportData]);
+                addLog('success', '系統報表已生成並儲存');
+            } catch (error) {
+                addLog('error', `報表生成失敗: ${error.message}`);
+            }
+        }
+
+        // 輔助函數
+        function validateConfig() {
+            return config.feishuEmail && config.feishuPassword && 
+                   config.browserlessApi && config.sheetsApi && config.sheetsId;
+        }
+
+        function updateStatus(service, status, message) {
+            const statusElement = document.getElementById(`${service}-status`);
+            const checkElement = document.getElementById(`${service}-last-check`);
+            
+            if (statusElement) {
+                const indicator = statusElement.querySelector('.status-indicator');
+                const text = statusElement.querySelector('span:last-child');
+                
+                indicator.className = `status-indicator status-${status}`;
+                text.textContent = message;
+            }
+            
+            if (checkElement) {
+                checkElement.textContent = `最後檢查: ${new Date().toLocaleString('zh-TW')}`;
+            }
+        }
+
+        function addLog(type, message) {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString('zh-TW');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${timestamp}] ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function clearLogs() {
+            document.getElementById('log-container').innerHTML = '';
+            addLog('info', '日誌已清除');
+        }
+
+        function analyzeInventory(products) {
+            const analysis = {
+                total: products.length,
+                lowStock: [],
+                outOfStock: [],
+                normal: []
+            };
+
+            products.forEach((product, index) => {
+                if (index === 0) return; // 跳過標題行
+                
+                const stock = parseInt(product[3]) || 0; // 假設庫存在第4欄
+                
+                if (stock === 0) {
+                    analysis.outOfStock.push(product);
+                } else if (stock <= 10) {
+                    analysis.lowStock.push(product);
+                } else {
+                    analysis.normal.push(product);
+                }
+            });
+
+            return analysis;
+        }
+
+        async function saveToGoogleSheets(sheetName, data) {
+            try {
+                const values = Array.isArray(data[0]) ? data : [data];
+                
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${config.sheetsId}/values/${sheetName}!A:Z:append?valueInputOption=RAW&key=${config.sheetsApi}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        values: values
+                    })
+                });
+
+                if (response.ok) {
+                    addLog('success', `資料已儲存到 Google Sheets (${sheetName})`);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                addLog('error', `Google Sheets 儲存失敗: ${error.message}`);
+            }
+        }
+
+        // 顯示/隱藏本地運行指南
+        function showLocalRunGuide() {
+            document.getElementById('local-guide').classList.remove('hidden');
+        }
+
+        function hideLocalRunGuide() {
+            document.getElementById('local-guide').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
